@@ -11,5 +11,3 @@ module Lita
     end
   end
 end
-
-raid new "King's Fall" "9PM PST
