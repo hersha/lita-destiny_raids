@@ -27,7 +27,7 @@ module Lita
       })
 
       def new(response)
-        #return unless config.channel_white_list.include? response.message.source.room
+        return unless can_i_respond?(response)
         name = response.matches.first.first
         raid = Raid.new name: name
         id = SecureRandom.hex(6)[0..5]
@@ -120,6 +120,13 @@ module Lita
 
       def raid_exist?(key)
         Lita.redis.exists key
+      end
+
+      def can_i_respond?(response)
+        return true if response.message.source.private_message
+        return true if config.channel_white_list.empty?
+        return true if config.channel_white_list.include? response.message.source.room
+        false
       end
 
 
