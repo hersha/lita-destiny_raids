@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.summary       = "Destiny Raid Registration for Lita"
 #  spec.summary       = ""
 #  spec.homepage      = "TODO: Add a homepage"
-#  spec.license       = "TODO: Add a license"
+  spec.license       = "MIT"
   spec.metadata      = { "lita_plugin_type" => "handler" }
 
   spec.files         = `git ls-files`.split($/)
