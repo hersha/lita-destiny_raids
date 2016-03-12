@@ -47,8 +47,17 @@ class Raid
     @stand_bys.to_a
   end
 
+  def status
+    "#{@name} - Leader: #{@leader || "N/A"} - Members: #{@members.size + (@leader.nil? ? 0 : 1)}/6 - Standby: #{@stand_bys.size}"
+  end
+
   def to_json
     {name: @name, leader: @leader, members: @members.to_a, stand_bys: @stand_bys.to_a}.to_json
+  end
+
+  def self.from_json(json)
+    params = JSON.parse(json)
+    new(name: params["name"], leader: params["leader"], members: params["members"], stand_bys: params["stand_bys"])
   end
 
 private

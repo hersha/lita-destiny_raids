@@ -104,4 +104,9 @@ describe Raid do
     subject.sign_up "Fosh"
     expect(subject.to_json).to eq({name: nil, leader: "Bill", members:["Fosh"], stand_bys: []}.to_json)
   end
+
+  it "displays its status" do
+    raid = Raid.new name: "test", leader: "bill", members: ["John"], stand_bys: ["joe"]
+    expect(raid.status).to eq("test - Leader: bill - Members: 2/6 - Standby: 1") 
+  end
 end
