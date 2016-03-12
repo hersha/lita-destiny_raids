@@ -4,7 +4,7 @@ module Lita
       route(/^raid new (.*)$/, :new)
 
       def new(response)
-        name = response.matches.inspect
+        name = response.inspect
         response.reply(name)
       end
 
