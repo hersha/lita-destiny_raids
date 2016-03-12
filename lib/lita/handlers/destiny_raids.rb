@@ -2,12 +2,32 @@ require "securerandom"
 module Lita
   module Handlers
     class DestinyRaids < Handler
-      route(/^raid new (.*)$/, :new)
-      route(/^raid list$/, :list)
-      route(/^raid show (.*)$/, :show)
-      route(/^raid signup (.*)$/, :signup)
+      config :channel_white_list, type: Array, default: []
+
+      route(/^raid new (.*)$/, :new, help: {
+        "raid new <RAID NAME>" => "Creates new raid with supplied name"
+      })
+      route(/^raid list$/, :list, help: {
+        "raid list" => "Lists all existing raids"
+      })
+      route(/^raid show (.{6})$/, :show, help: {
+        "raid show <ID>" => "Displays raid information"
+      })
+      route(/^raid signup (.{6})$/, :signup, help: {
+        "raid signup <ID>" => "Signup for a raid"
+      })
+      route(/^raid assign_leader (.{6}) (.*)$/, :assign_leader, help: {
+        "raid assign_leader <ID> <NAME>" => "Assign person to a raid leader position"
+      })
+      route(/^raid leave (.{6})$/, :leave, help: {
+        "raid leave <ID>" => "Leave a raid"
+      })
+      route(/^raid delete (.{6}$)/, :delete, help: {
+        "raid delete <ID>" => "Delete a raid"
+      })
 
       def new(response)
+        #return unless config.channel_white_list.include? response.message.source.room
         name = response.matches.first.first
         raid = Raid.new name: name
         id = SecureRandom.hex(6)[0..5]
@@ -16,7 +36,9 @@ module Lita
       end
 
       def list(response)
+        #return unless config.channel_white_list.include? response.message.source.room
         keys = Lita.redis.keys "destiny:raid:*"
+        return response.reply("No raids found") if keys.empty?
         header = "Found #{keys.size} raids:\n"
         body = keys.map do |k|
           id = k.split(":").last
@@ -27,8 +49,10 @@ module Lita
       end
 
       def show(response)
+        #return unless config.channel_white_list.include? response.message.source.room
         id = response.matches.first.first
-        key = "destiny:raid:#{id}"
+        key = get_key(response)
+        return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         raid = Raid.from_json Lita.redis.get key
         header = "ID: #{id} - Raid: #{raid.name}\nMembers:\n"
         members = "1: #{raid.leader || "Empty"} (Leader)\n" 
@@ -46,11 +70,40 @@ module Lita
       end
 
       def signup(response)
-        key = "destiny:raid:#{response.matches.first.first}"
+        #return unless config.channel_white_list.include? response.message.source.room
+        key = get_key(response)
+        return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         raid = Raid.from_json Lita.redis.get key
         raid.sign_up(username(response))
         Lita.redis.set key, raid.to_json
         response.reply("Signed up for #{raid.name}")
+      end
+
+      def assign_leader(response)
+        key = get_key(response)
+        return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
+        leader = response.matches.first.last
+        raid = Raid.from_json Lita.redis.get key
+        raid.leader = leader
+        Lita.redis.set key, raid.to_json
+        response.reply("#{leader} is now the leader of \"#{raid.name}\"")
+      end
+
+      def leave(response)
+        key = get_key(response)
+        return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
+        raid = Raid.from_json Lita.redis.get key
+        raid.leave(username(response))
+        Lita.redis.set key, raid.to_json
+        response.reply("Left #{raid.name}")
+      end
+
+      def delete(response)
+        key = get_key(response)
+        return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
+        raid = Raid.from_json Lita.redis.get key
+        Lita.redis.del key
+        response.reply("Deleted \"raid.name\"")
       end
 
     private
@@ -58,6 +111,15 @@ module Lita
         response.user.metadata['mention_name'].nil? ?
                  "#{response.user.name}" : 
                  "#{response.user.metadata['mention_name']}"
+      end
+
+      def get_key(response)
+        "destiny:raid:#{response.matches.first.first}"
+      end
+
+
+      def raid_exist?(key)
+        Lita.redis.exists key
       end
 
 
