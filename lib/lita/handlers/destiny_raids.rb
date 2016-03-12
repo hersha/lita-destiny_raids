@@ -25,6 +25,7 @@ module Lita
       route(/^raid delete (.{6}$)/, :delete, help: {
         "raid delete <ID>" => "Delete a raid"
       })
+      route(/^raid debug$/, :debug)
 
       def new(response)
         return unless can_i_respond?(response)
@@ -107,6 +108,11 @@ module Lita
         raid = Raid.from_json Lita.redis.get key
         Lita.redis.del key
         response.reply("Deleted \"raid.name\"")
+      end
+       
+      def debug(response)
+        source = response.message.source
+        response.reply(source.inspect)
       end
 
     private
