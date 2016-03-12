@@ -112,7 +112,7 @@ module Lita
        
       def debug(response)
         source = response.message.source
-        response.reply(source.inspect)
+        response.reply(source.room)
       end
 
     private
