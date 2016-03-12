@@ -36,7 +36,7 @@ module Lita
       end
 
       def list(response)
-        #return unless config.channel_white_list.include? response.message.source.room
+        return unless can_i_respond?(response)
         keys = Lita.redis.keys "destiny:raid:*"
         return response.reply("No raids found") if keys.empty?
         header = "Found #{keys.size} raids:\n"
@@ -49,7 +49,7 @@ module Lita
       end
 
       def show(response)
-        #return unless config.channel_white_list.include? response.message.source.room
+        return unless can_i_respond?(response)
         id = response.matches.first.first
         key = get_key(response)
         return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
@@ -70,7 +70,7 @@ module Lita
       end
 
       def signup(response)
-        #return unless config.channel_white_list.include? response.message.source.room
+        return unless can_i_respond?(response)
         key = get_key(response)
         return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         raid = Raid.from_json Lita.redis.get key
@@ -80,6 +80,7 @@ module Lita
       end
 
       def assign_leader(response)
+        return unless can_i_respond?(response)
         key = get_key(response)
         return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         leader = response.matches.first.last
@@ -90,6 +91,7 @@ module Lita
       end
 
       def leave(response)
+        return unless can_i_respond?(response)
         key = get_key(response)
         return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         raid = Raid.from_json Lita.redis.get key
@@ -99,6 +101,7 @@ module Lita
       end
 
       def delete(response)
+        return unless can_i_respond?(response)
         key = get_key(response)
         return response.reply("Raid #{id} does not exist") unless raid_exist?(key)
         raid = Raid.from_json Lita.redis.get key
