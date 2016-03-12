@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-destiny_raids"
-  spec.version       = "0.1.4"
+  spec.version       = "0.1.5"
   spec.authors       = ["Patrick Neff"]
   spec.email         = ["patrick.neff@me.com"]
   spec.description   = "Destiny Raid Registration for Lita"
